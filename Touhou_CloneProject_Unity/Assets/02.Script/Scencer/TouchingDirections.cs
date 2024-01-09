@@ -11,6 +11,7 @@ public class TouchingDirections : MonoBehaviour
     private bool _IsTouchingDown;
     private bool _IsTouchingRight;
     private bool _IsTouchingLeft;
+    public LayerMask targetLayer;
 
     public bool IsTouchingTop
     {  get { return _IsTouchingTop; }
@@ -45,6 +46,11 @@ public class TouchingDirections : MonoBehaviour
     private void Awake()
     {
         boxCollider = GetComponent<BoxCollider2D>();
+        
+        // targetLayer와 충돌하도록 필터링 설정
+        castFilter = new ContactFilter2D();
+        castFilter.useLayerMask = true;
+        castFilter.SetLayerMask(targetLayer);
     }
 
     private void FixedUpdate()
@@ -53,7 +59,5 @@ public class TouchingDirections : MonoBehaviour
         IsTouchingDown = boxCollider.Cast(Vector2.down, castFilter, downHits, rayDistance) > 0 ? true : false;
         IsTouchingRight = boxCollider.Cast(Vector2.right, castFilter, rightHits, rayDistance) > 0 ? true : false;
         IsTouchingLeft = boxCollider.Cast(Vector2.left, castFilter, leftHits, rayDistance) > 0 ? true : false;
-
-        Debug.Log(boxCollider.Cast(Vector2.left, castFilter, leftHits, rayDistance));
     }
 }

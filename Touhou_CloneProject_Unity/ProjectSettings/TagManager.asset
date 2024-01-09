@@ -5,16 +5,18 @@ TagManager:
   serializedVersion: 2
   tags:
   - Border
+  - BorderBullet
+  - Bullet
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Border
   - Water
   - UI
-  - 
-  - 
-  - 
+  - Player
+  - Bullet
+  - Enemy
   - 
   - 
   - 
