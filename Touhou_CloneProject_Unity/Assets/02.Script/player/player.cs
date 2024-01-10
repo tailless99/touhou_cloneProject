@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using static UnityEditor.Timeline.TimelinePlaybackControls;
 
@@ -20,6 +21,8 @@ public class player : MonoBehaviour
     Animator animator;
     TouchingDirections touchingDirections;
     bool FireBtnPress;
+    bool isOverLappingCollider;
+
 
     void Start()
     {
