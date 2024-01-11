@@ -15,6 +15,7 @@ public class player : MonoBehaviour
     [SerializeField] public float maxShotDelay;
     [SerializeField] public float curShotDelay;
     [SerializeField] public float bulletPower;
+    [SerializeField] public GameManager manager;
 
     Vector2 moveVector2 = Vector2.zero;
     Rigidbody2D rb;
@@ -42,6 +43,15 @@ public class player : MonoBehaviour
             OnFire_A();
             Reload();
         }        
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if(collision.gameObject.tag == "Enemy" || collision.gameObject.tag == "EnemyBullet")
+        {
+            manager.ReSpawnPlayer();
+            gameObject.SetActive(false);
+        }
     }
 
     private void Reload()
@@ -85,6 +95,7 @@ public class player : MonoBehaviour
         curShotDelay = 0;
     }
 
+    // 연속공격을 위해 공격키가 눌렸는지를 체크함
     public void OnFire_TypeA(InputAction.CallbackContext context)
     {
         if (context.started) FireBtnPress = true;
@@ -109,23 +120,19 @@ public class player : MonoBehaviour
         animator.SetBool(AnimationStrings.IsLeft, leftCheck);
 
         if (touchingDirections.IsTouchingLeft)
-        {
-            // 왼쪽에 벽이 있을 경우, 왼쪽으로 가려는 값이 있다면 0으로 변경
+        {   // 왼쪽에 벽이 있을 경우, 왼쪽으로 가려는 값이 있다면 0으로 변경
             if (moveDirection.x < 0) moveDirection.x = 0;
         }
         if (touchingDirections.IsTouchingRight)
-        {
-            // 오른쪽에 벽이 있을 경우, 오른쪽으로 가려는 값이 있다면 0으로 변경
+        {   // 오른쪽에 벽이 있을 경우, 오른쪽으로 가려는 값이 있다면 0으로 변경
             if (moveDirection.x > 0) moveDirection.x = 0;
         }
         if (touchingDirections.IsTouchingTop)
-        {
-            // 위쪽에 벽이 있을 경우, 위쪽으로 가려는 값이 있다면 0으로 변경
+        {   // 위쪽에 벽이 있을 경우, 위쪽으로 가려는 값이 있다면 0으로 변경
             if (moveDirection.y > 0) moveDirection.y = 0;
         }
         if (touchingDirections.IsTouchingDown)
-        {
-            // 아래쪽에 벽이 있을 경우, 아래쪽으로 가려는 값이 있다면 0으로 변경
+        {   // 아래쪽에 벽이 있을 경우, 아래쪽으로 가려는 값이 있다면 0으로 변경
             if (moveDirection.y < 0) moveDirection.y = 0;
         }
 
