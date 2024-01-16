@@ -9,20 +9,27 @@ using static UnityEditor.Timeline.TimelinePlaybackControls;
 public class player : MonoBehaviour
 {
     [SerializeField] float moveSpeed = 5f;
-    [SerializeField] float grazeSpeed = 3f;
-    [SerializeField] public GameObject bulletObjectA;
-    [SerializeField] public GameObject bulletObjectB;
+    [SerializeField] public GameObject bulletPlayerA;
+    [SerializeField] public GameObject bulletPlayerB;
+    [SerializeField] public GameObject boomEffect;
     [SerializeField] public float maxShotDelay;
     [SerializeField] public float curShotDelay;
     [SerializeField] public float bulletPower;
-    [SerializeField] public GameManager manager;
+    [SerializeField] public float maxBulletPower;
+    [SerializeField] public int boom;
+    [SerializeField] public int maxBoom;
+    [SerializeField] public GameManager gameManager;
+    [SerializeField] public ObjectManager objectManager;
+    [SerializeField] public int life;
+    [SerializeField] public int score;
+    
 
     Vector2 moveVector2 = Vector2.zero;
     Rigidbody2D rb;
     Animator animator;
     TouchingDirections touchingDirections;
     bool FireBtnPress;
-    bool isOverLappingCollider;
+    bool isBoomTime;
 
 
     void Start()
@@ -42,16 +49,64 @@ public class player : MonoBehaviour
         {
             OnFire_A();
             Reload();
-        }        
+        }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if(collision.gameObject.tag == "Enemy" || collision.gameObject.tag == "EnemyBullet")
+        if (collision.gameObject.tag == "Enemy" || collision.gameObject.tag == "EnemyBullet")
         {
-            manager.ReSpawnPlayer();
-            gameObject.SetActive(false);
+            // 중복 방지 구문
+            if (gameObject.activeSelf)
+            {
+                // 목숨 줄이는 구문
+                life--;
+                gameManager.UpdateLifeIcon(life);
+
+                // 리스폰 or 게임오버 함수 실행
+                if (life == 0) gameManager.gameOver();
+                else gameManager.ReSpawnPlayer();
+
+                // 플레이어 비활성화
+                gameObject.SetActive(false);
+                collision.gameObject.SetActive(false);
+            }
         }
+        // 아이템을 먹을 경우
+        if (collision.gameObject.tag == "Item")
+        {
+            Item item = collision.gameObject.GetComponent<Item>();
+            switch (item.type)
+            {
+                case "Coin":
+                    score += 1000;
+                    break;
+                case "Power":
+                    bulletPower += 1;
+                    if (bulletPower >= maxBulletPower)
+                    {   // 더해진 파워가 최대치를 넘는다면 최대치값으로 초기화
+                        bulletPower = maxBulletPower;
+                        score += 500;
+                    }
+                    break;
+                case "Boom":
+                    boom += 1;
+                    if (boom >= maxBoom)
+                    {   // 더해진 폭탄이 최대치를 넘는다면 최대치값으로 초기화
+                        boom = maxBoom;
+                        score += 500;
+                    }
+                    gameManager.UpdateBoomIcon(boom);
+                    break;
+            }
+            collision.gameObject.SetActive(false);  
+        }
+    }
+
+    private void offBoomEffect()
+    {
+        boomEffect.SetActive(false);
+        isBoomTime = false;
     }
 
     private void Reload()
@@ -66,22 +121,32 @@ public class player : MonoBehaviour
         switch (bulletPower)
         {
             case 1:
-                GameObject bullet = Instantiate(bulletObjectA, transform.position, transform.rotation); // 인스턴스로 생성
+                GameObject bullet = objectManager.MakeObj("bulletPlayerA"); // 인스턴스로 생성
+                bullet.transform.position = transform.position;
                 Rigidbody2D rigid = bullet.GetComponent<Rigidbody2D>();
                 rigid.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
                 break;
             case 2:
-                GameObject bulletL = Instantiate(bulletObjectA, transform.position + Vector3.right * 0.1f, transform.rotation); // 인스턴스로 생성
-                GameObject bulletR = Instantiate(bulletObjectA, transform.position + Vector3.left * 0.1f, transform.rotation);
+                GameObject bulletL = objectManager.MakeObj("bulletPlayerA");
+                GameObject bulletR = objectManager.MakeObj("bulletPlayerA");
+
+                bulletR.transform.position = transform.position + Vector3.right * 0.1f;
+                bulletL.transform.position = transform.position + Vector3.left * 0.1f;
+
                 Rigidbody2D rigidL = bulletL.GetComponent<Rigidbody2D>();
                 Rigidbody2D rigidR = bulletR.GetComponent<Rigidbody2D>();
                 rigidL.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
                 rigidR.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
                 break;
             case 3:
-                GameObject bulletLL = Instantiate(bulletObjectA, transform.position + Vector3.right * 0.25f, transform.rotation); // 인스턴스로 생성
-                GameObject bulletCC = Instantiate(bulletObjectB, transform.position, transform.rotation);
-                GameObject bulletRR = Instantiate(bulletObjectA, transform.position + Vector3.left * 0.25f, transform.rotation);
+                GameObject bulletLL = objectManager.MakeObj("bulletPlayerA");
+                GameObject bulletCC = objectManager.MakeObj("bulletPlayerB");
+                GameObject bulletRR = objectManager.MakeObj("bulletPlayerA");
+
+                bulletLL.transform.position = transform.position + Vector3.left * 0.1f;
+                bulletCC.transform.position = transform.position;
+                bulletRR.transform.position = transform.position + Vector3.right * 0.1f;
+                
                 Rigidbody2D rigidLL = bulletLL.GetComponent<Rigidbody2D>();
                 Rigidbody2D rigidCC = bulletCC.GetComponent<Rigidbody2D>();
                 Rigidbody2D rigidRR = bulletRR.GetComponent<Rigidbody2D>();
@@ -90,7 +155,7 @@ public class player : MonoBehaviour
                 rigidRR.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
                 break;
         }
-        
+
 
         curShotDelay = 0;
     }
@@ -100,6 +165,69 @@ public class player : MonoBehaviour
     {
         if (context.started) FireBtnPress = true;
         if (context.canceled) FireBtnPress = false;
+    }
+
+    public void OnBoom(InputAction.CallbackContext context) {
+        // 예외체크
+        if (isBoomTime) return; // 폭탄이 발사중인가
+        if (boom == 0) return;   // 폭타의 갯수가 0인가
+
+        boom--;
+        isBoomTime = true;
+
+        gameManager.UpdateBoomIcon(boom);
+        boomEffect.SetActive(true);
+        Invoke("offBoomEffect", 2.5f);
+
+        // 범위내의 에너미들에게 로직처리
+        GameObject[] enemiesL = objectManager.getPool("enemyL");
+        GameObject[] enemiesM = objectManager.getPool("enemyM");
+        GameObject[] enemiesS = objectManager.getPool("enemyS");
+        
+        foreach (GameObject enemy in enemiesL)
+        {
+            if (enemy.activeSelf) {
+                Enemy enemyLogic = enemy.GetComponent<Enemy>();
+                enemyLogic.OnHit(1000);
+            }
+        }
+        foreach (GameObject enemy in enemiesM)
+        {
+            if (enemy.activeSelf)
+            {
+                Enemy enemyLogic = enemy.GetComponent<Enemy>();
+                enemyLogic.OnHit(1000);
+            }
+        }
+        foreach (GameObject enemy in enemiesS)
+        {
+            if (enemy.activeSelf)
+            {
+                Enemy enemyLogic = enemy.GetComponent<Enemy>();
+                enemyLogic.OnHit(1000);
+            }
+        }
+
+        // 범위내의 불릿들 삭제처리
+        GameObject[] bulletEnemyA = objectManager.getPool("bulletEnemyA");
+        GameObject[] bulletEnemyB = objectManager.getPool("bulletEnemyB");
+            
+        
+        foreach (GameObject bullet in bulletEnemyA)
+        {
+            if(bullet.activeSelf) bullet.SetActive(false);
+        }
+        foreach (GameObject bullet in bulletEnemyB)
+        {
+            if (bullet.activeSelf) bullet.SetActive(false);
+        }
+
+    }
+
+    public void OnGrazeMove(InputAction.CallbackContext context)
+    {
+        if (context.started) moveSpeed /= 2;
+        if (context.canceled) moveSpeed *= 2;
     }
 
     public void OnMove(InputAction.CallbackContext context)

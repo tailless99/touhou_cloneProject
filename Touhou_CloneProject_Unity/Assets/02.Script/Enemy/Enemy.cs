@@ -4,15 +4,21 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
+    [SerializeField] public int score;
     [SerializeField] public float speed;
     [SerializeField] public string enemyName;
     [SerializeField] public int health;
+    [SerializeField] public int maxHealth;
     [SerializeField] Sprite[] sprites;  // 평소 : 0 / 피격시 : 1
-    [SerializeField] public GameObject bulletObjectA;
-    [SerializeField] public GameObject bulletObjectB;
+    [SerializeField] public GameObject bulletEnemyA;
+    [SerializeField] public GameObject bulletEnemyB;
+    [SerializeField] public GameObject ItemCoin;
+    [SerializeField] public GameObject ItemPower;
+    [SerializeField] public GameObject ItemBoom;
     [SerializeField] public float maxShotDelay;
     [SerializeField] public float curShotDelay;
     public GameObject player;
+    public ObjectManager objectManager;
 
     SpriteRenderer spriteRenderer;
 
@@ -27,6 +33,11 @@ public class Enemy : MonoBehaviour
         Reload();
     }
 
+    private void OnEnable()
+    {
+        health = maxHealth;
+    }
+
     private void Reload()
     {
         curShotDelay += Time.deltaTime;
@@ -38,37 +49,70 @@ public class Enemy : MonoBehaviour
 
         if (enemyName == "S" || enemyName == "M")
         {
-            GameObject bullet = Instantiate(bulletObjectA, transform.position, transform.rotation); // 인스턴스로 생성
+            GameObject bullet = objectManager.MakeObj("bulletEnemyA"); // 인스턴스로 생성
+            bullet.transform.position = transform.position;
             Rigidbody2D rigid = bullet.GetComponent<Rigidbody2D>();
             Vector3 dirVec = player.transform.position - transform.position;
             rigid.AddForce(dirVec.normalized * 3, ForceMode2D.Impulse);
-        } 
-        else if(enemyName == "L")
+        }
+        else if (enemyName == "L")
         {
-            GameObject bulletR = Instantiate(bulletObjectA, transform.position + Vector3.right * 0.3f, transform.rotation); // 인스턴스로 생성
-            GameObject bulletL = Instantiate(bulletObjectA, transform.position + Vector3.left * 0.3f, transform.rotation); // 인스턴스로 생성
+            GameObject bulletR = objectManager.MakeObj("bulletEnemyA");
+            GameObject bulletL = objectManager.MakeObj("bulletEnemyA");
+
+            bulletR.transform.position = transform.position + Vector3.right * 0.3f;
+            bulletL.transform.position = transform.position + Vector3.left * 0.3f;
 
             Rigidbody2D rigidR = bulletR.GetComponent<Rigidbody2D>();
             Rigidbody2D rigidL = bulletL.GetComponent<Rigidbody2D>();
 
             Vector3 dirVecR = player.transform.position - (transform.position + Vector3.right * 0.3f);
             Vector3 dirVecL = player.transform.position - (transform.position + Vector3.left * 0.3f);
-            
+
             rigidR.AddForce(dirVecR.normalized * 5, ForceMode2D.Impulse);
             rigidL.AddForce(dirVecL.normalized * 5, ForceMode2D.Impulse);
         }
         curShotDelay = 0;
     }
 
-    private void OnHit(int damage)
+    public void OnHit(int damage)
     {
+        if (health <= 0) return;
+
         health -= damage;
 
         spriteRenderer.sprite = sprites[1];
         Invoke("RetrunSprite", 0.1f); // 시간차 실행
 
         // HP가 0이하가 되면 삭제
-        if(health <= 0) Destroy(this.gameObject);
+        if (health <= 0)
+        {
+            player playerLogic = player.GetComponent<player>();
+            playerLogic.score += this.score;
+
+            // 아이템 랜덤 드랍
+            int ran = Random.Range(0, 10);
+            if (ran > 8)
+            {
+                // Boom
+                GameObject itemBoom = objectManager.MakeObj("itemBoom");
+                itemBoom.transform.position = transform.position;
+            }
+            else if (ran > 6)
+            {
+                // PowerBoom
+                GameObject itemPower = objectManager.MakeObj("itemPower");
+                itemPower.transform.position = transform.position;
+            }
+            else if (ran > 5)
+            {
+                // Coin;
+                GameObject itemCoin = objectManager.MakeObj("itemCoin");
+                itemCoin.transform.position = transform.position;
+            }
+            transform.rotation = Quaternion.identity;
+            this.gameObject.SetActive(false);
+        }
     }
 
     private void RetrunSprite()
@@ -80,13 +124,13 @@ public class Enemy : MonoBehaviour
     {
         if (collision.gameObject.tag == "BorderBullet")
         {
-            Destroy(this.gameObject);
+            this.gameObject.SetActive(false);
+            transform.rotation = Quaternion.identity;
         }
         else if (collision.gameObject.tag == "PlayerBullet")
         {
             Bullet bullet = collision.gameObject.GetComponent<Bullet>();
             OnHit(bullet.damage);
-            Destroy(collision.gameObject);
         }
     }
 }
