@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System.IO;
 
 public class GameManager : MonoBehaviour
 {
@@ -20,19 +21,56 @@ public class GameManager : MonoBehaviour
     [SerializeField] public GameObject gameOverSet;
     [SerializeField] public ObjectManager objectManager;
 
+    [SerializeField] public List<Spawn> spawnList;
+    public int spawnIndex;
+    public bool spawnEnd;
+
     private void Awake()
     {
+        spawnList = new List<Spawn>();
         enemyObjects = new string[] { "enemyS", "enemyM", "enemyL" };
+        ReadSpawnFile();
+    }
+
+    void ReadSpawnFile()
+    {
+        // 초기화
+        spawnList.Clear();
+        spawnIndex = 0;
+        spawnEnd = false;
+
+        // 파일 읽기
+        TextAsset textData = Resources.Load("Stage 0") as TextAsset; // 읽은 데이터가 TextAsset이 아니면 널처리됨
+        StringReader reader = new StringReader(textData.text);
+
+        while (reader != null)
+        { 
+            // 한줄씩 읽어서 line에 대입
+            string line = reader.ReadLine();
+            Debug.Log(line);
+            if (line == null) break;
+
+            // 리스트 데이터 생성
+            Spawn spawnData = new Spawn();
+            spawnData.delay = float.Parse(line.Split(',')[0]);
+            spawnData.type = line.Split(',')[1];
+            spawnData.point = int.Parse(line.Split(',')[2]);
+            spawnList.Add(spawnData);
+        }
+
+        // 파일 닫기
+        reader.Close();
+        // 첫번째 스폰 딜레이 적용
+        maxSpawnDelay = spawnList[0].delay;
     }
 
     private void Update()
     {
         curSpawnDelay += Time.deltaTime;
 
-        if(curSpawnDelay > maxSpawnDelay)
+        if(curSpawnDelay > maxSpawnDelay && !spawnEnd)
         {
             SpawnEnemy();
-            maxSpawnDelay = UnityEngine.Random.Range(0.5f, 3f);
             curSpawnDelay = 0;
         }
 
@@ -54,10 +92,23 @@ public class GameManager : MonoBehaviour
 
     private void SpawnEnemy()
     {
-        int ranEnemy = UnityEngine.Random.Range(0, 3);
-        int ranPoint = UnityEngine.Random.Range(0, 9);
-        GameObject enemy = objectManager.MakeObj(enemyObjects[ranEnemy]);
-        enemy.transform.position = spawnPoints[ranPoint].position;
+        int enemyIndex = 0;
+        switch (spawnList[spawnIndex].type)
+        {
+            case "S":
+                enemyIndex = 0;
+                break;
+            case "M":
+                enemyIndex = 1;
+                break;
+            case "L":
+                enemyIndex = 2;
+                break;
+        }
+        
+        int enemyPoint = spawnList[spawnIndex].point;
+        GameObject enemy = objectManager.MakeObj(enemyObjects[enemyIndex]);
+        enemy.transform.position = spawnPoints[enemyPoint].position;
         enemy.transform.rotation = Quaternion.identity;
 
         Rigidbody2D rb = enemy.GetComponent<Rigidbody2D>();
@@ -65,12 +116,12 @@ public class GameManager : MonoBehaviour
         enemyLogic.player = player;
         enemyLogic.objectManager = objectManager;
 
-        if(ranPoint == 6 || ranPoint == 8) // Right Spawn
+        if(enemyPoint == 6 || enemyPoint == 8) // Right Spawn
         {
             enemy.transform.Rotate(Vector3.back * 90);
             rb.velocity = new Vector2(enemyLogic.speed * (-1), -1);
         }
-        else if (ranPoint == 5 || ranPoint == 7) // Left Spawn
+        else if (enemyPoint == 5 || enemyPoint == 7) // Left Spawn
         {
             enemy.transform.Rotate(Vector3.forward * 90);
             rb.velocity = new Vector2(enemyLogic.speed, -1);
@@ -79,6 +130,17 @@ public class GameManager : MonoBehaviour
         {
             rb.velocity = new Vector2(0, enemyLogic.speed * (-1));
         }
+
+        // 리스폰 인덱스 증가
+        spawnIndex++;
+        if (spawnIndex == spawnList.Count)
+        {
+            spawnEnd = true;
+            return;
+        }
+
+        // 다음 리스폰 딜레이 갱신
+        maxSpawnDelay = spawnList[spawnIndex].delay;
     }
 
     public void UpdateLifeIcon(int life)
