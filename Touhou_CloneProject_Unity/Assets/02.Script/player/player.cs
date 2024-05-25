@@ -12,6 +12,7 @@ public class player : MonoBehaviour
     [SerializeField] public GameObject bulletPlayerA;
     [SerializeField] public GameObject bulletPlayerB;
     [SerializeField] public GameObject boomEffect;
+    [SerializeField] public GameObject[] followers;
     [SerializeField] public float maxShotDelay;
     [SerializeField] public float curShotDelay;
     [SerializeField] public float bulletPower;
@@ -28,7 +29,7 @@ public class player : MonoBehaviour
     Rigidbody2D rb;
     Animator animator;
     TouchingDirections touchingDirections;
-    bool FireBtnPress;
+    public bool FireBtnPress;
     bool isBoomTime;
 
 
@@ -49,6 +50,13 @@ public class player : MonoBehaviour
         {
             OnFire_A();
             Reload();
+
+            // 공격중에 먹어도 팔로워가 공격하도록 업데이트에서 다시 체크
+            foreach (var Actor in followers)
+            {
+                if (Actor.activeSelf)
+                    Actor.GetComponent<Follower>().OnFire_TypeA(true);
+            }
         }
     }
 
@@ -83,6 +91,7 @@ public class player : MonoBehaviour
                     break;
                 case "Power":
                     bulletPower += 1;
+                    AddFollower();
                     if (bulletPower >= maxBulletPower)
                     {   // 더해진 파워가 최대치를 넘는다면 최대치값으로 초기화
                         bulletPower = maxBulletPower;
@@ -101,6 +110,16 @@ public class player : MonoBehaviour
             }
             collision.gameObject.SetActive(false);  
         }
+    }
+
+    public void AddFollower()
+    {
+        if (bulletPower == 4)
+            followers[0].SetActive(true);
+        else if (bulletPower == 5)
+            followers[1].SetActive(true);
+        else if (bulletPower == 6)
+            followers[2].SetActive(true);
     }
 
     private void offBoomEffect()
@@ -138,7 +157,7 @@ public class player : MonoBehaviour
                 rigidL.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
                 rigidR.AddForce(Vector2.up * 10, ForceMode2D.Impulse);
                 break;
-            case 3:
+            default :
                 GameObject bulletLL = objectManager.MakeObj("bulletPlayerA");
                 GameObject bulletCC = objectManager.MakeObj("bulletPlayerB");
                 GameObject bulletRR = objectManager.MakeObj("bulletPlayerA");
@@ -163,8 +182,36 @@ public class player : MonoBehaviour
     // 연속공격을 위해 공격키가 눌렸는지를 체크함
     public void OnFire_TypeA(InputAction.CallbackContext context)
     {
-        if (context.started) FireBtnPress = true;
-        if (context.canceled) FireBtnPress = false;
+        if (context.started) { 
+            FireBtnPress = true;
+
+            foreach (var Actor in followers)
+            {
+                if (Actor.activeSelf)
+                    Actor.GetComponent<Follower>().OnFire_TypeA(true);
+            }
+        }
+
+        if (context.canceled)
+        {
+            FireBtnPress = false;
+            foreach (var Actor in followers)
+            {
+                if (Actor.activeSelf)
+                    Actor.GetComponent<Follower>().OnFire_TypeA(false);
+            }
+        }
+    }
+
+    public void OnFirePress(InputAction.CallbackContext context) {
+        if (context.started)
+        {
+            foreach (var Actor in followers)
+            {
+                if (Actor.activeSelf)
+                    Actor.GetComponent<Follower>().OnFire_TypeA(true);
+            }
+        }
     }
 
     public void OnBoom(InputAction.CallbackContext context) {

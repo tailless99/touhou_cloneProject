@@ -14,6 +14,7 @@ public class ObjectManager : MonoBehaviour
     [SerializeField] public GameObject bulletPlayerBFreb;
     [SerializeField] public GameObject bulletEnemyAFreb;
     [SerializeField] public GameObject bulletEnemyBFreb;
+    [SerializeField] public GameObject bulletFollowerPrefab;
 
     GameObject[] enemyL;
     GameObject[] enemyM;
@@ -25,6 +26,7 @@ public class ObjectManager : MonoBehaviour
     GameObject[] bulletPlayerB;
     GameObject[] bulletEnemyA;
     GameObject[] bulletEnemyB;
+    GameObject[] bulletFollower;
 
     GameObject[] targetPool;
 
@@ -42,6 +44,7 @@ public class ObjectManager : MonoBehaviour
         bulletPlayerB = new GameObject[1000];
         bulletEnemyA = new GameObject[100];
         bulletEnemyB = new GameObject[100];
+        bulletFollower = new GameObject[100];
 
         Generate();
     }
@@ -102,6 +105,11 @@ public class ObjectManager : MonoBehaviour
             bulletEnemyB[i] = Instantiate(bulletEnemyBFreb);
             bulletEnemyB[i].SetActive(false);
         }
+        for (int i = 0; i < bulletFollower.Length; i++)
+        {
+            bulletFollower[i] = Instantiate(bulletFollowerPrefab);
+            bulletFollower[i].SetActive(false);
+        }        
     }
 
     public GameObject MakeObj(string type)
@@ -137,6 +145,9 @@ public class ObjectManager : MonoBehaviour
                 break;
             case "bulletEnemyB":
                 targetPool = bulletEnemyB;
+                break;
+            case "bulletFollower":
+                targetPool = bulletFollower;
                 break;
         }
 
@@ -184,6 +195,9 @@ public class ObjectManager : MonoBehaviour
                 break;
             case "bulletEnemyB":
                 targetPool = bulletEnemyB;
+                break;
+            case "bulletFollower":
+                targetPool = bulletFollower;
                 break;
         }
         return targetPool;
