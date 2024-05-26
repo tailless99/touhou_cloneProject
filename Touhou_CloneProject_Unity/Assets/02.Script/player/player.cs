@@ -258,6 +258,8 @@ public class player : MonoBehaviour
         // 범위내의 불릿들 삭제처리
         GameObject[] bulletEnemyA = objectManager.getPool("bulletEnemyA");
         GameObject[] bulletEnemyB = objectManager.getPool("bulletEnemyB");
+        GameObject[] bulletBossA = objectManager.getPool("bulletBossA");
+        GameObject[] bulletBossB = objectManager.getPool("bulletBossB");
             
         
         foreach (GameObject bullet in bulletEnemyA)
@@ -265,6 +267,14 @@ public class player : MonoBehaviour
             if(bullet.activeSelf) bullet.SetActive(false);
         }
         foreach (GameObject bullet in bulletEnemyB)
+        {
+            if (bullet.activeSelf) bullet.SetActive(false);
+        }
+        foreach (GameObject bullet in bulletBossA)
+        {
+            if (bullet.activeSelf) bullet.SetActive(false);
+        }
+        foreach (GameObject bullet in bulletBossB)
         {
             if (bullet.activeSelf) bullet.SetActive(false);
         }
