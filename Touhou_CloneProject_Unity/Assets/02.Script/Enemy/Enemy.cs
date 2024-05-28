@@ -30,7 +30,6 @@ public class Enemy : MonoBehaviour
     private void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-
         if (enemyName == "B")
         {
             animator = GetComponent<Animator>();
@@ -293,6 +292,7 @@ public class Enemy : MonoBehaviour
             }
             transform.rotation = Quaternion.identity;
             this.gameObject.SetActive(false);
+
         }
     }
 

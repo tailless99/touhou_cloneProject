@@ -230,6 +230,7 @@ public class player : MonoBehaviour
         GameObject[] enemiesL = objectManager.getPool("enemyL");
         GameObject[] enemiesM = objectManager.getPool("enemyM");
         GameObject[] enemiesS = objectManager.getPool("enemyS");
+        GameObject[] enemiesB = objectManager.getPool("enemyB");
         
         foreach (GameObject enemy in enemiesL)
         {
@@ -247,6 +248,14 @@ public class player : MonoBehaviour
             }
         }
         foreach (GameObject enemy in enemiesS)
+        {
+            if (enemy.activeSelf)
+            {
+                Enemy enemyLogic = enemy.GetComponent<Enemy>();
+                enemyLogic.OnHit(1000);
+            }
+        }
+        foreach (GameObject enemy in enemiesB)
         {
             if (enemy.activeSelf)
             {

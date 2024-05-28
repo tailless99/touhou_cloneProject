@@ -11,6 +11,7 @@ TagManager:
   - EnemyBullet
   - Item
   - Follower
+  - UI
   layers:
   - Default
   - TransparentFX
