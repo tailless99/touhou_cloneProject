@@ -139,7 +139,7 @@ public class ObjectManager : MonoBehaviour
                 targetPool = bulletEnemyB;
                 break;
         }
-
+        
         for (int i = 0; i < targetPool.Length; i++)
         {
             if (!targetPool[i].activeSelf)

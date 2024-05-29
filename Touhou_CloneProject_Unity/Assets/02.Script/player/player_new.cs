@@ -117,7 +117,7 @@ public class player_new : MonoBehaviour
     public void OnFire_A()
     {
         if (curShotDelay < maxShotDelay) return;
-
+        
         switch (bulletPower)
         {
             case 1:
@@ -189,7 +189,7 @@ public class player_new : MonoBehaviour
         {
             if (enemy.activeSelf)
             {
-                Enemy enemyLogic = enemy.GetComponent<Enemy>();
+                Enemy_new enemyLogic = enemy.GetComponent<Enemy_new>();
                 enemyLogic.OnHit(1000);
             }
         }
@@ -197,7 +197,7 @@ public class player_new : MonoBehaviour
         {
             if (enemy.activeSelf)
             {
-                Enemy enemyLogic = enemy.GetComponent<Enemy>();
+                Enemy_new enemyLogic = enemy.GetComponent<Enemy_new>();
                 enemyLogic.OnHit(1000);
             }
         }
@@ -205,7 +205,7 @@ public class player_new : MonoBehaviour
         {
             if (enemy.activeSelf)
             {
-                Enemy enemyLogic = enemy.GetComponent<Enemy>();
+                Enemy_new enemyLogic = enemy.GetComponent<Enemy_new>();
                 enemyLogic.OnHit(1000);
             }
         }

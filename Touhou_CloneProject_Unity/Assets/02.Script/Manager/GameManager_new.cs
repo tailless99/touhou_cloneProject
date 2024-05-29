@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.IO;
 
-public class GameManager : MonoBehaviour
+public class GameManager_new : MonoBehaviour
 {
     //[SerializeField] public GameObject[] enemyObjects;
     [SerializeField] public string[] enemyObjects;
@@ -44,7 +44,7 @@ public class GameManager : MonoBehaviour
         StringReader reader = new StringReader(textData.text);
 
         while (reader != null)
-        { 
+        {
             // 한줄씩 읽어서 line에 대입
             string line = reader.ReadLine();
             if (line == null) break;
@@ -67,14 +67,14 @@ public class GameManager : MonoBehaviour
     {
         curSpawnDelay += Time.deltaTime;
 
-        if(curSpawnDelay > maxSpawnDelay && !spawnEnd)
+        if (curSpawnDelay > maxSpawnDelay && !spawnEnd)
         {
             SpawnEnemy();
             curSpawnDelay = 0;
         }
 
         // UI Score Update
-        player playerLogic = player.GetComponent<player>();
+        player_new playerLogic = player.GetComponent<player_new>();
         scoreText.text = string.Format("{0:n0}", playerLogic.score);
     }
 
@@ -104,18 +104,18 @@ public class GameManager : MonoBehaviour
                 enemyIndex = 2;
                 break;
         }
-        
+
         int enemyPoint = spawnList[spawnIndex].point;
         GameObject enemy = objectManager.MakeObj(enemyObjects[enemyIndex]);
         enemy.transform.position = spawnPoints[enemyPoint].position;
         enemy.transform.rotation = Quaternion.identity;
 
         Rigidbody2D rb = enemy.GetComponent<Rigidbody2D>();
-        Enemy enemyLogic = enemy.GetComponent<Enemy>();
+        Enemy_new enemyLogic = enemy.GetComponent<Enemy_new>();
         enemyLogic.player = player;
         enemyLogic.objectManager = objectManager;
 
-        if(enemyPoint == 6 || enemyPoint == 8) // Right Spawn
+        if (enemyPoint == 6 || enemyPoint == 8) // Right Spawn
         {
             enemy.transform.Rotate(Vector3.back * 90);
             rb.velocity = new Vector2(enemyLogic.speed * (-1), -1);
@@ -145,9 +145,9 @@ public class GameManager : MonoBehaviour
     public void UpdateLifeIcon(int life)
     {
         // UI Life Disable
-        for(int i=life; i < lifeImage.Length; i++)
+        for (int i = life; i < lifeImage.Length; i++)
         {
-            lifeImage[i].color = new Color(1,1,1,0);
+            lifeImage[i].color = new Color(1, 1, 1, 0);
         }
     }
 
