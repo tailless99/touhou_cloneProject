@@ -20,11 +20,13 @@ public class GameManager : MonoBehaviour
     [SerializeField] public Image[] boomImage;
     [SerializeField] public GameObject gameOverSet;
     [SerializeField] public GameObject gameWinSet;
+    [SerializeField] public GameObject gameExit;
     [SerializeField] public ObjectManager objectManager;
 
     [SerializeField] public List<Spawn> spawnList;
     public int spawnIndex;
     public bool spawnEnd;
+    public bool isPaused;
 
     private void Awake()
     {
@@ -188,5 +190,17 @@ public class GameManager : MonoBehaviour
     public void GoTitle()
     {
         SceneManager.LoadScene("TitleScene");
+    }
+
+    public void GameQuit()
+    {
+        Application.Quit();
+    }
+
+    public void TogglePauseGameSetting()
+    {
+        isPaused = !isPaused;
+        gameExit.gameObject.SetActive(isPaused);
+        Time.timeScale = isPaused ? 0 : 1;
     }
 }

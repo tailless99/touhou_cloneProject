@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+#if UNITY_DEITOR
 using static UnityEditor.Timeline.TimelinePlaybackControls;
+#endif
 
 public class player_new : MonoBehaviour
 {

@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+#if UNITY_DEITOR
 using static UnityEditor.Timeline.TimelinePlaybackControls;
+#endif
 
 public class player : MonoBehaviour
 {
@@ -131,6 +133,11 @@ public class player : MonoBehaviour
     private void Reload()
     {
         curShotDelay += Time.deltaTime;
+    }
+
+    public void OnGameQuitActive(InputAction.CallbackContext context)
+    {
+        if (context.started) gameManager.TogglePauseGameSetting();
     }
 
     public void OnFire_A()

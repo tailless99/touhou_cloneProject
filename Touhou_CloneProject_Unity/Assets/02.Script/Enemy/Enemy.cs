@@ -19,6 +19,7 @@ public class Enemy : MonoBehaviour
     [SerializeField] public float curShotDelay;
     public GameObject player;
     public ObjectManager objectManager;
+    public GameManager gameManager;
 
     Animator animator;
     SpriteRenderer spriteRenderer;
@@ -34,6 +35,11 @@ public class Enemy : MonoBehaviour
         {
             animator = GetComponent<Animator>();
         }
+    }
+
+    private void Start()
+    {
+        gameManager = GameObject.FindWithTag("UI").GetComponent<GameManager>();
     }
 
     private void Update()
@@ -66,9 +72,10 @@ public class Enemy : MonoBehaviour
 
     private void Think()
     {
-        patternIndex = (patternIndex == 4) ? 0 : patternIndex + 1;
+        patternIndex = (patternIndex == 3) ? 0 : patternIndex + 1;
         curPattenCount = 0;
 
+        if (!gameObject.activeSelf) return;
         switch (patternIndex)
         {
             case 0:
@@ -91,6 +98,8 @@ public class Enemy : MonoBehaviour
 
     private void FireFoward()
     {
+        if (!gameObject.activeSelf) return;
+
         // 정방으로 4발 발사
         GameObject bulletR = objectManager.MakeObj("bulletBossA");
         GameObject bulletRR = objectManager.MakeObj("bulletBossA");
@@ -127,6 +136,8 @@ public class Enemy : MonoBehaviour
 
     private void FireShot()
     {
+        if (!gameObject.activeSelf) return;
+
         for (int i = 0; i < 5; i++)
         {
             GameObject bullet = objectManager.MakeObj("bulletEnemyB"); // 인스턴스로 생성
@@ -153,6 +164,8 @@ public class Enemy : MonoBehaviour
 
     private void FireArc()
     {
+        if (!gameObject.activeSelf) return;
+
         for (int i = 0; i < 5; i++)
         {
             GameObject bullet = objectManager.MakeObj("bulletEnemyA"); // 인스턴스로 생성
@@ -177,6 +190,8 @@ public class Enemy : MonoBehaviour
 
     void FireAround()
     {
+        if (!gameObject.activeSelf) return;
+
         // 한 패턴에 발사 총알 갯수
         int roundNumA = 50;
         int roundNumB = 40;
@@ -293,6 +308,10 @@ public class Enemy : MonoBehaviour
             transform.rotation = Quaternion.identity;
             this.gameObject.SetActive(false);
 
+            // 만약 보스가 죽었다면 게임승리 오브젝트 활성화
+            if (enemyName == "B") {
+                gameManager.gameWin();
+            }
         }
     }
 
