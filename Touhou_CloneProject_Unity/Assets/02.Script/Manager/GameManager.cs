@@ -19,6 +19,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] public Image[] lifeImage;
     [SerializeField] public Image[] boomImage;
     [SerializeField] public GameObject gameOverSet;
+    [SerializeField] public GameObject gameWinSet;
     [SerializeField] public ObjectManager objectManager;
 
     [SerializeField] public List<Spawn> spawnList;
@@ -28,7 +29,7 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         spawnList = new List<Spawn>();
-        enemyObjects = new string[] { "enemyS", "enemyM", "enemyL" };
+        enemyObjects = new string[] { "enemyS", "enemyM", "enemyL", "enemyB" };
         ReadSpawnFile();
     }
 
@@ -103,6 +104,9 @@ public class GameManager : MonoBehaviour
             case "L":
                 enemyIndex = 2;
                 break;
+            case "B":
+                enemyIndex = 3;
+                break;
         }
         
         int enemyPoint = spawnList[spawnIndex].point;
@@ -171,8 +175,18 @@ public class GameManager : MonoBehaviour
         gameOverSet.SetActive(true);
     }
 
+    public void gameWin()
+    {
+        gameWinSet.SetActive(true);
+    }
+
     public void GameRetry()
     {
-        SceneManager.LoadScene(0);
+        SceneManager.LoadScene("Game");
+    }
+
+    public void GoTitle()
+    {
+        SceneManager.LoadScene("TitleScene");
     }
 }
